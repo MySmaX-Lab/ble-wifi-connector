@@ -1,0 +1,30 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "ble-wifi-connector"
+version = "0.1.0"
+description = "MySSIX BLE WiFi Connector"
+authors = ["MySmaX <mysmaxlab@gmail.com>"]
+readme = "README.md"
+packages = [{include = "ble_wifi_connector"}]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+termcolor = "*"
+getmac = "*"
+typing-extensions = ">=4.0"
+dataclasses = "*"
+pytest = "*"
+pytest-timeout = "*"
+pytest-asyncio = "*"
+importlib-metadata = "*"
+bless = "*"
+dbus-next = "*"
+uvloop = "*"
+zeroconf = "*"
+
+[tool.poetry.group.dev.dependencies]
+tox = "^4.6.3"
