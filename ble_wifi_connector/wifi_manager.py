@@ -1,7 +1,8 @@
 import subprocess
 import asyncio
 
-from big_thing_py.utils import *
+from termcolor import cprint
+import re
 
 
 def validate_broker_address(address: str) -> bool:
@@ -42,7 +43,7 @@ class WiFiManager:
             active_connections = [line for line in result.stdout.split('\n') if line.startswith('yes:')]
             return active_connections[0].split(':')[1]
         except subprocess.CalledProcessError as e:
-            MXLOG_DEBUG(f"Failed to get connected WiFi: {e}")
+            cprint(f"Failed to get connected WiFi: {e}")
         return ''
 
     async def find_ssid(self, ssid: str, timeout: int = 10) -> bool:
@@ -53,10 +54,10 @@ class WiFiManager:
             )
             stdout, stderr = await process.communicate()
             if ssid in stdout.decode():
-                MXLOG_DEBUG(f"Found SSID: {ssid}")
+                cprint(f"Found SSID: {ssid}")
                 return True
             elif asyncio.get_event_loop().time() > end_time:
-                MXLOG_DEBUG("Timeout: SSID not found within the given time.")
+                cprint("Timeout: SSID not found within the given time.")
                 return False
             await asyncio.sleep(1)  # 잠시 대기 후 다시 시도합니다.
 
@@ -64,12 +65,12 @@ class WiFiManager:
         try:
             await asyncio.create_subprocess_shell("nmcli --version", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         except OSError:
-            MXLOG_DEBUG("nmcli is not installed. Please install NetworkManager to use this function.")
+            cprint("nmcli is not installed. Please install NetworkManager to use this function.")
             return False
 
         ssid_found = await self.find_ssid(ssid)
         if not ssid_found:
-            MXLOG_DEBUG(f"SSID {ssid} not found. Cannot attempt to connect.")
+            cprint(f"SSID {ssid} not found. Cannot attempt to connect.")
             return False
 
         connect_cmd = f'sudo nmcli dev wifi connect "{ssid}" password "{password}"'
@@ -77,13 +78,13 @@ class WiFiManager:
             process = await asyncio.create_subprocess_shell(connect_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             stdout, stderr = await process.communicate()
             if process.returncode == 0:
-                MXLOG_DEBUG("WiFi connection attempt: success")
+                cprint("WiFi connection attempt: success")
                 return True
             else:
-                MXLOG_DEBUG(f"WiFi connection attempt: failed\n{stderr.decode()}")
+                cprint(f"WiFi connection attempt: failed\n{stderr.decode()}")
                 return False
         except OSError as e:
-            MXLOG_DEBUG(f"Error executing nmcli command: {e}")
+            cprint(f"Error executing nmcli command: {e}")
             return False
 
     async def connect(self) -> bool:
@@ -96,13 +97,13 @@ class WiFiManager:
             )
             active_connections = [line for line in result.stdout.split('\n') if line.startswith('yes:')]
             if active_connections:
-                MXLOG_DEBUG("WiFi connection status: connected")
+                cprint("WiFi connection status: connected")
                 return True
             else:
-                MXLOG_DEBUG("WiFi connection status: not connected")
+                cprint("WiFi connection status: not connected")
                 return False
         except subprocess.CalledProcessError:
-            MXLOG_DEBUG("Failed to check WiFi connection status")
+            cprint("Failed to check WiFi connection status")
             return False
 
 
@@ -117,15 +118,15 @@ if __name__ == '__main__':
         ble_advertiser = BLEAdvertiser()
         await ble_advertiser.start()
         ssid, pw, broker, error_code = await ble_advertiser.wait_until_wifi_credentials_set()
-        MXLOG_DEBUG(f'WiFi credentials set: ssid: {ssid}, pw: {pw}, broker: {broker}, error_code: {error_code}')
+        cprint(f'WiFi credentials set: ssid: {ssid}, pw: {pw}, broker: {broker}, error_code: {error_code}')
         await ble_advertiser.stop()
         return ssid, pw, broker, error_code
 
     async def wifi_run(ssid, pw):
         wifi_manager = WiFiManager(ssid, pw)
-        MXLOG_DEBUG(f'current wifi: {wifi_manager.get_connected_wifi_ssid()}')
+        cprint(f'current wifi: {wifi_manager.get_connected_wifi_ssid()}')
         await wifi_manager.connect_to(ssid, pw)
-        MXLOG_DEBUG(f'current wifi: {wifi_manager.get_connected_wifi_ssid()}')
+        cprint(f'current wifi: {wifi_manager.get_connected_wifi_ssid()}')
 
     ssid, pw, broker, error_code = asyncio.run(ble_run())
     asyncio.run(wifi_run(ssid, pw))

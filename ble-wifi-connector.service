@@ -1,0 +1,10 @@
+[Unit]
+Description=MySmaX BLE WiFi Connector
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/usr/bin/python3 /usr/local/myssix/ble-wifi-connector/ble_wifi_connector/__main__.py
+
+[Install]
+WantedBy=multi-user.target
