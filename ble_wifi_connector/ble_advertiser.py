@@ -95,7 +95,7 @@ class HubWifiService(Service):
 
 
 class BLEAdvertiser:
-    def __init__(self, server_name: str = 'MySSIX BLE SERVER') -> None:
+    def __init__(self, server_name: str = 'MySSIX Middleware BLE SERVER') -> None:
         self._server_name = server_name
         self._server: BlessServer = None
         self._trigger = asyncio.Event()
@@ -177,19 +177,18 @@ class BLEAdvertiser:
 if __name__ == '__main__':
 
     async def run():
-        ble_advertiser = BLEAdvertiser()
+        ble_advertiser = BLEAdvertiser(server_name='MySSIX Middleware BLE SERVER')
         await ble_advertiser.start()
         ssid, pw, error_code = await ble_advertiser.wait_until_wifi_credentials_set()
         cprint(f'WiFi credentials set: ssid: {ssid}, pw: {pw}, error_code: {error_code}')
         await ble_advertiser.stop()
 
-    async def test():
+    async def test_middleware(server_name: str = 'MySSIX Middleware BLE SERVER'):
         '''
         NOTE: this test function should be run on a separate device
         '''
         from bleak import BleakClient, BleakScanner
 
-        server_name = "MySSIX BLE SERVER"
         device_address = None
 
         devices = await BleakScanner.discover()
