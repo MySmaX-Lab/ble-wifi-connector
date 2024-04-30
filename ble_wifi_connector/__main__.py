@@ -22,7 +22,7 @@ class BLEWiFiConnectorState(Enum):
 async def main_event_loop():
     connect_try = CONNECT_RETRY
     state = BLEWiFiConnectorState.RESET
-    ble_advertiser = BLEAdvertiser(server_name='MySSIX Middleware BLE SERVER')
+    ble_advertiser = BLEAdvertiser(server_name='MySSIX Middleware BLE Server')
     wifi_manager = WiFiManager()
 
     ssid = ''

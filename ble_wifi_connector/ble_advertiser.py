@@ -95,7 +95,7 @@ class HubWifiService(Service):
 
 
 class BLEAdvertiser:
-    def __init__(self, server_name: str = 'MySSIX Middleware BLE SERVER') -> None:
+    def __init__(self, server_name: str = 'MySSIX Middleware BLE Server') -> None:
         self._server_name = server_name
         self._server: BlessServer = None
         self._trigger = asyncio.Event()
@@ -177,13 +177,13 @@ class BLEAdvertiser:
 if __name__ == '__main__':
 
     async def run():
-        ble_advertiser = BLEAdvertiser(server_name='MySSIX Middleware BLE SERVER')
+        ble_advertiser = BLEAdvertiser(server_name='MySSIX Middleware BLE Server')
         await ble_advertiser.start()
         ssid, pw, error_code = await ble_advertiser.wait_until_wifi_credentials_set()
         cprint(f'WiFi credentials set: ssid: {ssid}, pw: {pw}, error_code: {error_code}')
         await ble_advertiser.stop()
 
-    async def test_middleware(server_name: str = 'MySSIX Middleware BLE SERVER'):
+    async def test_middleware(server_name: str = 'MySSIX Middleware BLE Server'):
         '''
         NOTE: this test function should be run on a separate device
         '''
@@ -205,8 +205,8 @@ if __name__ == '__main__':
         pw_characteristic_uuid = HubWifiService.SetWifiPWCharacteristic().uuid
         connect_wifi_characteristic_uuid = HubWifiService.ConnectWifiCharacteristic().uuid
 
-        ssid_value = b"ssid"
-        pw_value = b"password"
+        ssid_value = b"MySmaX-office5G"
+        pw_value = b"/PeaCE/#1"
 
         async with BleakClient(device_address) as client:
             if client.is_connected:
@@ -221,4 +221,4 @@ if __name__ == '__main__':
                 await client.write_gatt_char(connect_wifi_characteristic_uuid, bytearray([0x00]))
                 print("WiFi connection attempt")
 
-    asyncio.run(run())
+    asyncio.run(test_middleware())
