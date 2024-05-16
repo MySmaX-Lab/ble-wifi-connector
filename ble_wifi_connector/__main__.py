@@ -4,6 +4,8 @@ import asyncio
 from ble_wifi_connector.ble_advertiser import BLEAdvertiser, BLEErrorCode
 from ble_wifi_connector.wifi_manager import WiFiManager
 from termcolor import cprint
+from utils import get_mac_address
+
 
 EVENT_LOOP_TIME_OUT = 0.01
 CONNECT_RETRY = 3
@@ -22,7 +24,7 @@ class BLEWiFiConnectorState(Enum):
 async def main_event_loop():
     connect_try = CONNECT_RETRY
     state = BLEWiFiConnectorState.RESET
-    ble_advertiser = BLEAdvertiser(server_name='MySSIX Middleware BLE Server')
+    ble_advertiser = BLEAdvertiser(server_name=f'Joi Hub {get_mac_address()}')
     wifi_manager = WiFiManager()
 
     ssid = ''

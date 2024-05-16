@@ -4,7 +4,7 @@ from bless import BlessServer, BlessGATTCharacteristic, GATTCharacteristicProper
 from termcolor import cprint
 from typing import Any, List, Tuple
 from enum import Enum
-import getmac
+from utils import get_mac_address
 
 
 class BLEErrorCode(Enum):
@@ -73,7 +73,7 @@ class HubWifiService(Service):
                 for line in file:
                     stripped_line: str = line.split('//')[0].strip()
                     if stripped_line.startswith('middleware_identifier'):
-                        return f'''{stripped_line.split('=')[1].strip().strip('"')}_{getmac.get_mac_address().replace(':', '').upper()}'''
+                        return f'''{stripped_line.split('=')[1].strip().strip('"')}_{get_mac_address().replace(':', '').upper()}'''
 
     class ErrorCodeCharacteristic(Characteristic):
         def __init__(self):
@@ -95,7 +95,7 @@ class HubWifiService(Service):
 
 
 class BLEAdvertiser:
-    def __init__(self, server_name: str = 'MySSIX Middleware BLE Server') -> None:
+    def __init__(self, server_name: str = f'Joi Hub {get_mac_address()}') -> None:
         self._server_name = server_name
         self._server: BlessServer = None
         self._trigger = asyncio.Event()
@@ -177,13 +177,13 @@ class BLEAdvertiser:
 if __name__ == '__main__':
 
     async def run():
-        ble_advertiser = BLEAdvertiser(server_name='MySSIX Middleware BLE Server')
+        ble_advertiser = BLEAdvertiser(server_name=f'Joi Hub {get_mac_address()}')
         await ble_advertiser.start()
         ssid, pw, error_code = await ble_advertiser.wait_until_wifi_credentials_set()
         cprint(f'WiFi credentials set: ssid: {ssid}, pw: {pw}, error_code: {error_code}')
         await ble_advertiser.stop()
 
-    async def test_middleware(server_name: str = 'MySSIX Middleware BLE Server'):
+    async def test_middleware(server_name: str = f'Joi Hub {get_mac_address()}'):
         '''
         NOTE: this test function should be run on a separate device
         '''
