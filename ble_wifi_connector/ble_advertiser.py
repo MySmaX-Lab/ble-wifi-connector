@@ -73,7 +73,7 @@ class HubWifiService(Service):
                 for line in file:
                     stripped_line: str = line.split('//')[0].strip()
                     if stripped_line.startswith('middleware_identifier'):
-                        return f'''{stripped_line.split('=')[1].strip().strip('"')}_{get_mac_address().replace(':', '').upper()}'''
+                        return f'''{stripped_line.split('=')[1].strip().strip('"')} {get_mac_address().replace(':', '').upper()}'''
 
     class ErrorCodeCharacteristic(Characteristic):
         def __init__(self):
