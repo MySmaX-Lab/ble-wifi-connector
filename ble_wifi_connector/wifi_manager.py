@@ -114,7 +114,7 @@ if __name__ == '__main__':
     async def ble_run():
         from big_thing_py.core.ble_advertiser import BLEAdvertiser
 
-        ble_advertiser = BLEAdvertiser(server_name=f'Joi Hub {get_mac_address()}')
+        ble_advertiser = BLEAdvertiser(server_name=f'JOI Hub {get_mac_address()}')
         await ble_advertiser.start()
         ssid, pw, broker, error_code = await ble_advertiser.wait_until_wifi_credentials_set()
         cprint(f'WiFi credentials set: ssid: {ssid}, pw: {pw}, broker: {broker}, error_code: {error_code}')

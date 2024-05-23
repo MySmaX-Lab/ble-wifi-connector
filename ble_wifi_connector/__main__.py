@@ -24,7 +24,7 @@ class BLEWiFiConnectorState(Enum):
 async def main_event_loop():
     connect_try = CONNECT_RETRY
     state = BLEWiFiConnectorState.RESET
-    ble_advertiser = BLEAdvertiser(server_name=f'Joi Hub {get_mac_address()}')
+    ble_advertiser = BLEAdvertiser(server_name=f'JOI Hub {get_mac_address()}')
     wifi_manager = WiFiManager()
 
     ssid = ''

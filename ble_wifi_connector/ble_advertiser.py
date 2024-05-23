@@ -95,7 +95,7 @@ class HubWifiService(Service):
 
 
 class BLEAdvertiser:
-    def __init__(self, server_name: str = f'Joi Hub {get_mac_address()}') -> None:
+    def __init__(self, server_name: str = f'JOI Hub {get_mac_address()}') -> None:
         self._server_name = server_name
         self._server: BlessServer = None
         self._trigger = asyncio.Event()
@@ -177,13 +177,13 @@ class BLEAdvertiser:
 if __name__ == '__main__':
 
     async def run():
-        ble_advertiser = BLEAdvertiser(server_name=f'Joi Hub {get_mac_address()}')
+        ble_advertiser = BLEAdvertiser(server_name=f'JOI Hub {get_mac_address()}')
         await ble_advertiser.start()
         ssid, pw, error_code = await ble_advertiser.wait_until_wifi_credentials_set()
         cprint(f'WiFi credentials set: ssid: {ssid}, pw: {pw}, error_code: {error_code}')
         await ble_advertiser.stop()
 
-    async def test_middleware(server_name: str = f'Joi Hub {get_mac_address()}'):
+    async def test_middleware(server_name: str = f'JOI Hub {get_mac_address()}'):
         '''
         NOTE: this test function should be run on a separate device
         '''
