@@ -1,10 +1,14 @@
-import asyncio
-from bless import BlessServer, BlessGATTCharacteristic, GATTCharacteristicProperties, GATTAttributePermissions
+__all__ = ['BLEAdvertiser', 'BLEErrorCode']
 
-from termcolor import cprint
+
+from utils import *
+
+import asyncio
 from typing import Any, List, Tuple
 from enum import Enum
-from utils import get_mac_address
+from termcolor import colored
+
+from bless import BlessServer, BlessGATTCharacteristic, GATTCharacteristicProperties, GATTAttributePermissions
 
 
 class BLEErrorCode(Enum):
@@ -99,9 +103,10 @@ class BLEAdvertiser:
         self._server_name = server_name
         self._server: BlessServer = None
         self._trigger = asyncio.Event()
+        self._logger = Logger().get_logger()
 
     def _read_request(self, characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
-        cprint(f'Reading {characteristic.value}')
+        self._logger.debug(f'Reading {characteristic.value}')
         return characteristic.value
 
     def _write_request(self, characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
@@ -109,23 +114,23 @@ class BLEAdvertiser:
             characteristic.value = value
             uuid = characteristic.uuid.upper()
             if uuid == HubWifiService.SetWifiSSIDCharacteristic().uuid:
-                cprint(f'WiFi SSID set: {self._server.get_characteristic(HubWifiService.SetWifiSSIDCharacteristic().uuid).value}')
+                self._logger.debug(f'WiFi SSID set: {self._server.get_characteristic(HubWifiService.SetWifiSSIDCharacteristic().uuid).value}')
             elif uuid == HubWifiService.SetWifiPWCharacteristic().uuid:
-                cprint(f'WiFi PW set: {self._server.get_characteristic(HubWifiService.SetWifiPWCharacteristic().uuid).value}')
+                self._logger.debug(f'WiFi PW set: {self._server.get_characteristic(HubWifiService.SetWifiPWCharacteristic().uuid).value}')
             elif uuid == HubWifiService.ConnectWifiCharacteristic().uuid:
                 ssid = self._server.get_characteristic(HubWifiService.SetWifiSSIDCharacteristic().uuid).value
                 pw = self._server.get_characteristic(HubWifiService.SetWifiPWCharacteristic().uuid).value
                 if ssid is None or pw is None:
-                    cprint(f'WiFi credentials not set... ssid: {ssid}, pw: {pw}')
+                    self._logger.debug(f'WiFi credentials not set... ssid: {ssid}, pw: {pw}')
                     self._server.update_value(
                         HubWifiService.ErrorCodeCharacteristic().uuid, BLEErrorCode.WIFI_CREDENTIAL_NOT_SET.value.to_bytes(2, 'little')
                     )
                     return
                 else:
-                    cprint('wifi credentials is set!', 'green')
+                    self._logger.debug(colored('wifi credentials is set!', 'green'))
                     self._trigger.set()
         except Exception as e:
-            cprint(f'Error occurred while writing characteristic: {e}', 'red')
+            self._logger.debug(colored(f'Error occurred while writing characteristic: {e}', 'red'))
             self._server.update_value(HubWifiService.ErrorCodeCharacteristic().uuid, BLEErrorCode.FAIL.value.to_bytes(2, 'little'))
 
     async def _add_service(self, service: Service):
@@ -134,7 +139,7 @@ class BLEAdvertiser:
             await self._server.add_new_characteristic(service.uuid, char.uuid, char.properties, char.value, char.permissions)
 
     async def start(self):
-        cprint('Starting BLE advertiser...')
+        self._logger.debug('Starting BLE advertiser...')
         self._trigger.clear()
         self._server = BlessServer(name=self._server_name)
         self._server.read_request_func = self._read_request
@@ -143,7 +148,7 @@ class BLEAdvertiser:
         await self._add_service(HubWifiService())
 
         await self._server.start()
-        cprint('BLE Advertising started...')
+        self._logger.debug('BLE Advertising started...')
 
     async def is_advertising(self) -> bool:
         if self._server is None:
@@ -168,7 +173,7 @@ class BLEAdvertiser:
 
     async def stop(self):
         await self._server.stop()
-        cprint('BLE Advertising stopped...')
+        self._logger.debug('BLE Advertising stopped...')
 
     async def is_connected(self):
         return await self._server.is_connected()
@@ -180,7 +185,7 @@ if __name__ == '__main__':
         ble_advertiser = BLEAdvertiser(server_name=f'JOI Hub {get_mac_address()}')
         await ble_advertiser.start()
         ssid, pw, error_code = await ble_advertiser.wait_until_wifi_credentials_set()
-        cprint(f'WiFi credentials set: ssid: {ssid}, pw: {pw}, error_code: {error_code}')
+        self._logger.debug(f'WiFi credentials set: ssid: {ssid}, pw: {pw}, error_code: {error_code}')
         await ble_advertiser.stop()
 
     async def test_middleware(server_name: str = f'JOI Hub {get_mac_address()}'):
