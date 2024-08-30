@@ -72,6 +72,12 @@ class WiFiManager:
             self._logger.debug("nmcli is not installed. Please install NetworkManager to use this function.")
             return False
 
+        # 현재 연결된 Wi-Fi SSID 확인
+        current_ssid = await self.get_current_ssid()
+        if current_ssid == ssid:
+            self._logger.debug(f"Already connected to {ssid}. Skipping connection process.")
+            return True
+
         ssid_found = await self.find_ssid(ssid)
         if not ssid_found:
             self._logger.debug(f"SSID {ssid} not found. Cannot attempt to connect.")
@@ -90,6 +96,20 @@ class WiFiManager:
         except OSError as e:
             self._logger.debug(f"Error executing nmcli command: {e}")
             return False
+
+    async def get_current_ssid(self) -> str:
+        try:
+            cmd = "nmcli -t -f active,ssid dev wifi | egrep '^yes:' | cut -d: -f2"
+            process = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            stdout, stderr = await process.communicate()
+            if process.returncode == 0:
+                return stdout.decode().strip()
+            else:
+                self._logger.debug(f"Error getting current SSID: {stderr.decode()}")
+                return ""
+        except OSError as e:
+            self._logger.debug(f"Error executing nmcli command: {e}")
+            return ""
 
     async def connect(self) -> bool:
         return await self.connect_to(self._ssid, self._password)
