@@ -98,6 +98,69 @@ class HubWifiService(Service):
         super().__init__(HubWifiService.UUID, characteristics)
 
 
+class DeviceWifiService(Service):
+    UUID = '640F0000-0000-0000-0000-000000000000'
+
+    class SetWifiSSIDCharacteristic(Characteristic):
+        def __init__(self):
+            super().__init__(
+                uuid='640F0001-0000-0000-0000-000000000000',
+                properties=GATTCharacteristicProperties.write,
+                permissions=GATTAttributePermissions.writeable,
+            )
+
+    class SetWifiPWCharacteristic(Characteristic):
+        def __init__(self):
+            super().__init__(
+                uuid='640F0002-0000-0000-0000-000000000000',
+                properties=GATTCharacteristicProperties.write,
+                permissions=GATTAttributePermissions.writeable,
+            )
+
+    class SetBrokerInfoCharacteristic(Characteristic):
+        def __init__(self):
+            super().__init__(
+                uuid='640F0003-0000-0000-0000-000000000000',
+                properties=GATTCharacteristicProperties.write,
+                permissions=GATTAttributePermissions.writeable,
+            )
+
+    class ConnectWifiCharacteristic(Characteristic):
+        def __init__(self):
+            super().__init__(
+                uuid='640F0004-0000-0000-0000-000000000000',
+                properties=GATTCharacteristicProperties.write,
+                permissions=GATTAttributePermissions.writeable,
+            )
+
+    class ThingIDCharacteristic(Characteristic):
+        def __init__(self):
+            super().__init__(
+                uuid='640F0005-0000-0000-0000-000000000000',
+                properties=GATTCharacteristicProperties.read,
+                permissions=GATTAttributePermissions.readable,
+            )
+
+    class ErrorCodeCharacteristic(Characteristic):
+        def __init__(self):
+            super().__init__(
+                uuid='640F0006-0000-0000-0000-000000000000',
+                properties=GATTCharacteristicProperties.read,
+                permissions=GATTAttributePermissions.readable,
+            )
+
+    def __init__(self):
+        characteristics = [
+            self.SetWifiSSIDCharacteristic(),
+            self.SetWifiPWCharacteristic(),
+            self.SetBrokerInfoCharacteristic(),
+            self.ConnectWifiCharacteristic(),
+            # self.ThingIDCharacteristic(), # this characteristic should be added, after thing id is set
+            self.ErrorCodeCharacteristic(),
+        ]
+        super().__init__(DeviceWifiService.UUID, characteristics)
+
+
 class BLEAdvertiser:
     def __init__(self, server_name: str = f'JOI Hub {get_mac_address()}') -> None:
         self._server_name = server_name
@@ -180,15 +243,16 @@ class BLEAdvertiser:
 
 
 if __name__ == '__main__':
+    logger = Logger().get_logger()
 
-    async def run():
+    async def run_hub():
         ble_advertiser = BLEAdvertiser(server_name=f'JOI Hub {get_mac_address()}')
         await ble_advertiser.start()
         ssid, pw, error_code = await ble_advertiser.wait_until_wifi_credentials_set()
-        self._logger.debug(f'WiFi credentials set: ssid: {ssid}, pw: {pw}, error_code: {error_code}')
+        logger.debug(f'WiFi credentials set: ssid: {ssid}, pw: {pw}, error_code: {error_code}')
         await ble_advertiser.stop()
 
-    async def test_middleware(server_name: str = f'JOI Hub {get_mac_address()}'):
+    async def set_hub(server_name: str = f'JOI Hub {get_mac_address()}'):
         '''
         NOTE: this test function should be run on a separate device
         '''
@@ -213,7 +277,7 @@ if __name__ == '__main__':
         ssid_value = b"MySmaX-office5G"
         pw_value = b"/PeaCE/#1"
 
-        async with BleakClient(device_address) as client:
+        async with BleakClient(device) as client:
             if client.is_connected:
                 print(f"Connected to {device_address}")
 
@@ -226,4 +290,49 @@ if __name__ == '__main__':
                 await client.write_gatt_char(connect_wifi_characteristic_uuid, bytearray([0x00]))
                 print("WiFi connection attempt")
 
-    asyncio.run(test_middleware())
+    async def set_smart_device(device_name: str):
+        '''
+        NOTE: this test function should be run on a separate device
+        '''
+        from bleak import BleakClient, BleakScanner
+
+        server_name = f'JOI SD {device_name}'
+        device_address = None
+
+        devices = await BleakScanner.discover()
+        for device in devices:
+            if device.name == server_name:
+                print(f'Found BLE server! name: {device.name}, address: {device.address}')
+                device_address = device.address
+                break
+        else:
+            print(f"Cannot find {server_name}")
+            return
+
+        ssid_characteristic_uuid = DeviceWifiService.SetWifiSSIDCharacteristic().uuid
+        pw_characteristic_uuid = DeviceWifiService.SetWifiPWCharacteristic().uuid
+        set_broker_info_characteristic_uuid = DeviceWifiService.SetBrokerInfoCharacteristic().uuid
+        connect_wifi_characteristic_uuid = DeviceWifiService.ConnectWifiCharacteristic().uuid
+
+        ssid_value = b""
+        pw_value = b""
+        broker_info_value = b"127.0.0.1:8883"
+
+        async with BleakClient(device) as client:
+            if client.is_connected:
+                print(f"Connected to {device_address}")
+
+                await client.write_gatt_char(ssid_characteristic_uuid, ssid_value)
+                print("WiFi SSID set")
+
+                await client.write_gatt_char(pw_characteristic_uuid, pw_value)
+                print("WiFi password set")
+
+                await client.write_gatt_char(set_broker_info_characteristic_uuid, broker_info_value)
+                print("Broker info set")
+
+                await client.write_gatt_char(connect_wifi_characteristic_uuid, bytearray([0x00]))
+                print("WiFi connection attempt")
+
+    # asyncio.run(set_hub())
+    asyncio.run(set_smart_device(device_name='Speaker'))
