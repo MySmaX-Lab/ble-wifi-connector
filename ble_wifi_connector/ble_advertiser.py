@@ -299,7 +299,7 @@ def main(mode: str, ssid: str, pw: str, broker_info: str, device_name: str):
             ssid_value = ssid.encode()
             pw_value = pw.encode()
 
-            async with BleakClient(device, timeout=30) as client:
+            async with BleakClient(device, timeout=60) as client:
                 if client.is_connected:
                     print(f"Connected to {device_address}")
 
@@ -343,7 +343,7 @@ def main(mode: str, ssid: str, pw: str, broker_info: str, device_name: str):
             pw_value = pw.encode()
             broker_info_value = broker_info.encode()
 
-            async with BleakClient(device, timeout=30) as client:
+            async with BleakClient(device, timeout=60) as client:
                 if client.is_connected:
                     click.echo(f"Connected to {device_address}")
 
