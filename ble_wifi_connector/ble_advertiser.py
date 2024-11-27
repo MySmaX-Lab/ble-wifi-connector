@@ -1,12 +1,13 @@
 __all__ = ['BLEAdvertiser', 'BLEErrorCode']
 
 
-from utils import *
+from ble_wifi_connector.utils import *
 
 import asyncio
 from typing import Any, List, Tuple
 from enum import Enum
 from termcolor import colored
+import click
 
 from bless import BlessServer, BlessGATTCharacteristic, GATTCharacteristicProperties, GATTAttributePermissions
 
@@ -242,97 +243,126 @@ class BLEAdvertiser:
         return await self._server.is_connected()
 
 
+@click.command()
+@click.option(
+    '--mode',
+    '-m',
+    type=click.Choice(['run_hub', 'set_hub', 'set_smart_device'], case_sensitive=False),
+    required=True,
+    help="Mode to run: 'run_hub', 'set_hub', 'set_smart_device'.",
+)
+@click.option('--ssid', '-ssid', type=str, required=True, help="WiFi SSID.")
+@click.option('--pw', '-pw', type=str, required=True, help="WiFi password.")
+@click.option('--device-name', '-n', type=str, required=True, help="device name")
+@click.option('--broker-info', '-b', type=str, required=False, help="Broker info (only required for 'smart_device').")
+def main(mode: str, ssid: str, pw: str, broker_info: str, device_name: str):
+    """
+    CLI to run BLE Advertiser in hub or smart_device mode.
+    """
+    if mode == 'run_hub':
+        if broker_info or device_name:
+            click.echo("Error: 'broker_info' and 'device_name' are not valid options for 'hub' mode.")
+            return
+
+        async def run_hub(ssid: str, pw: str):
+            from bleak import BleakClient, BleakScanner
+
+            ble_advertiser = BLEAdvertiser(server_name=f'JOI Hub {get_mac_address()}')
+            await ble_advertiser.start()
+            click.echo(f"BLE Hub Advertiser started with SSID: {ssid}, PW: {pw}")
+            ssid, pw, error_code = await ble_advertiser.wait_until_wifi_credentials_set()
+            click.echo(f"WiFi credentials set: SSID: {ssid}, PW: {pw}, Error Code: {error_code}")
+            await ble_advertiser.stop()
+
+        asyncio.run(run_hub(ssid, pw))
+    elif mode == 'set_hub':
+
+        async def set_hub(ssid: str, pw: str, device_name: str = f'JOI Hub {get_mac_address()}'):
+            from bleak import BleakClient, BleakScanner
+
+            device_address = None
+
+            devices = await BleakScanner.discover(timeout=10)
+            for device in devices:
+                if device.name == device_name:
+                    print(f'Found BLE server! name: {device.name}, address: {device.address}')
+                    device_address = device.address
+                    break
+            else:
+                print(f"Cannot find {device_name}")
+                return
+
+            ssid_characteristic_uuid = HubWifiService.SetWifiSSIDCharacteristic().uuid
+            pw_characteristic_uuid = HubWifiService.SetWifiPWCharacteristic().uuid
+            connect_wifi_characteristic_uuid = HubWifiService.ConnectWifiCharacteristic().uuid
+
+            ssid_value = ssid.encode()
+            pw_value = pw.encode()
+
+            async with BleakClient(device, timeout=30) as client:
+                if client.is_connected:
+                    print(f"Connected to {device_address}")
+
+                    await client.write_gatt_char(ssid_characteristic_uuid, ssid_value)
+                    print("WiFi SSID set")
+
+                    await client.write_gatt_char(pw_characteristic_uuid, pw_value)
+                    print("WiFi password set")
+
+                    await client.write_gatt_char(connect_wifi_characteristic_uuid, bytearray([0x00]))
+                    print("WiFi connection attempt")
+
+        asyncio.run(set_hub(ssid, pw, device_name))
+    elif mode == 'set_smart_device':
+        if not broker_info or not device_name:
+            click.echo("Error: 'broker_info' and 'device_name' are required options for 'smart_device' mode.")
+            return
+
+        async def set_smart_device(ssid: str, pw: str, broker_info: str, device_name: str):
+            from bleak import BleakClient, BleakScanner
+
+            server_name = f'JOI SD {device_name}'
+            device_address = None
+
+            devices = await BleakScanner.discover(timeout=10)
+            for device in devices:
+                if device.name == server_name:
+                    click.echo(f'Found BLE server! Name: {device.name}, Address: {device.address}')
+                    device_address = device.address
+                    break
+            else:
+                click.echo(f"Cannot find device with name: {server_name}")
+                return
+
+            ssid_characteristic_uuid = DeviceWifiService.SetWifiSSIDCharacteristic().uuid
+            pw_characteristic_uuid = DeviceWifiService.SetWifiPWCharacteristic().uuid
+            set_broker_info_characteristic_uuid = DeviceWifiService.SetBrokerInfoCharacteristic().uuid
+            connect_wifi_characteristic_uuid = DeviceWifiService.ConnectWifiCharacteristic().uuid
+
+            ssid_value = ssid.encode()
+            pw_value = pw.encode()
+            broker_info_value = broker_info.encode()
+
+            async with BleakClient(device, timeout=30) as client:
+                if client.is_connected:
+                    click.echo(f"Connected to {device_address}")
+
+                    await client.write_gatt_char(ssid_characteristic_uuid, ssid_value)
+                    click.echo("WiFi SSID set")
+
+                    await client.write_gatt_char(pw_characteristic_uuid, pw_value)
+                    click.echo("WiFi password set")
+
+                    await client.write_gatt_char(set_broker_info_characteristic_uuid, broker_info_value)
+                    click.echo("Broker info set")
+
+                    await client.write_gatt_char(connect_wifi_characteristic_uuid, bytearray([0x00]))
+                    click.echo("WiFi connection attempt")
+
+        asyncio.run(set_smart_device(ssid, pw, broker_info, device_name))
+    else:
+        click.echo("Invalid mode. Use 'hub' or 'smart_device'.")
+
+
 if __name__ == '__main__':
-    logger = Logger().get_logger()
-
-    async def run_hub():
-        ble_advertiser = BLEAdvertiser(server_name=f'JOI Hub {get_mac_address()}')
-        await ble_advertiser.start()
-        ssid, pw, error_code = await ble_advertiser.wait_until_wifi_credentials_set()
-        logger.debug(f'WiFi credentials set: ssid: {ssid}, pw: {pw}, error_code: {error_code}')
-        await ble_advertiser.stop()
-
-    async def set_hub(server_name: str = f'JOI Hub {get_mac_address()}'):
-        '''
-        NOTE: this test function should be run on a separate device
-        '''
-        from bleak import BleakClient, BleakScanner
-
-        device_address = None
-
-        devices = await BleakScanner.discover()
-        for device in devices:
-            if device.name == server_name:
-                print(f'Found BLE server! name: {device.name}, address: {device.address}')
-                device_address = device.address
-                break
-        else:
-            print(f"Cannot find {server_name}")
-            return
-
-        ssid_characteristic_uuid = HubWifiService.SetWifiSSIDCharacteristic().uuid
-        pw_characteristic_uuid = HubWifiService.SetWifiPWCharacteristic().uuid
-        connect_wifi_characteristic_uuid = HubWifiService.ConnectWifiCharacteristic().uuid
-
-        ssid_value = b"MySmaX-office5G"
-        pw_value = b"/PeaCE/#1"
-
-        async with BleakClient(device) as client:
-            if client.is_connected:
-                print(f"Connected to {device_address}")
-
-                await client.write_gatt_char(ssid_characteristic_uuid, ssid_value)
-                print("WiFi SSID set")
-
-                await client.write_gatt_char(pw_characteristic_uuid, pw_value)
-                print("WiFi password set")
-
-                await client.write_gatt_char(connect_wifi_characteristic_uuid, bytearray([0x00]))
-                print("WiFi connection attempt")
-
-    async def set_smart_device(device_name: str):
-        '''
-        NOTE: this test function should be run on a separate device
-        '''
-        from bleak import BleakClient, BleakScanner
-
-        server_name = f'JOI SD {device_name}'
-        device_address = None
-
-        devices = await BleakScanner.discover()
-        for device in devices:
-            if device.name == server_name:
-                print(f'Found BLE server! name: {device.name}, address: {device.address}')
-                device_address = device.address
-                break
-        else:
-            print(f"Cannot find {server_name}")
-            return
-
-        ssid_characteristic_uuid = DeviceWifiService.SetWifiSSIDCharacteristic().uuid
-        pw_characteristic_uuid = DeviceWifiService.SetWifiPWCharacteristic().uuid
-        set_broker_info_characteristic_uuid = DeviceWifiService.SetBrokerInfoCharacteristic().uuid
-        connect_wifi_characteristic_uuid = DeviceWifiService.ConnectWifiCharacteristic().uuid
-
-        ssid_value = b""
-        pw_value = b""
-        broker_info_value = b"127.0.0.1:8883"
-
-        async with BleakClient(device) as client:
-            if client.is_connected:
-                print(f"Connected to {device_address}")
-
-                await client.write_gatt_char(ssid_characteristic_uuid, ssid_value)
-                print("WiFi SSID set")
-
-                await client.write_gatt_char(pw_characteristic_uuid, pw_value)
-                print("WiFi password set")
-
-                await client.write_gatt_char(set_broker_info_characteristic_uuid, broker_info_value)
-                print("Broker info set")
-
-                await client.write_gatt_char(connect_wifi_characteristic_uuid, bytearray([0x00]))
-                print("WiFi connection attempt")
-
-    # asyncio.run(set_hub())
-    asyncio.run(set_smart_device(device_name='Speaker'))
+    main()

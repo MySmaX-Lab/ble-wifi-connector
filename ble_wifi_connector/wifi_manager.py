@@ -1,7 +1,7 @@
 __all__ = ['WiFiManager', 'validate_broker_address']
 
 
-from utils import *
+from ble_wifi_connector.utils import *
 
 import subprocess
 import asyncio

@@ -1,4 +1,4 @@
-from utils import *
+from ble_wifi_connector.utils import *
 
 import asyncio
 from enum import Enum, auto
