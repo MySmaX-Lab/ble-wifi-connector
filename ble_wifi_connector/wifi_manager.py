@@ -17,6 +17,7 @@ class WiFiManager:
     def __init__(self, ssid: str = '', password: str = ''):
         self._ssid = ssid
         self._password = password
+        self._connected = False
         self._logger = Logger().get_logger()
 
     @property
@@ -72,6 +73,9 @@ class WiFiManager:
             self._logger.debug("nmcli is not installed. Please install NetworkManager to use this function.")
             return False
 
+        ssid = ssid.strip()
+        password = password.strip()
+
         # 현재 연결된 Wi-Fi SSID 확인
         current_ssid = await self.get_current_ssid()
         if current_ssid == ssid:
@@ -112,7 +116,8 @@ class WiFiManager:
             return ""
 
     async def connect(self) -> bool:
-        return await self.connect_to(self._ssid, self._password)
+        self._connected = await self.connect_to(self._ssid, self._password)
+        return self._connected
 
     def check_connection(self) -> bool:
         try:
@@ -121,10 +126,14 @@ class WiFiManager:
             )
             active_connections = [line for line in result.stdout.split('\n') if line.startswith('yes:')]
             if active_connections:
-                self._logger.debug("WiFi connection status: connected")
+                if not self._connected:
+                    self._logger.debug("WiFi connection status: connected")
+                self._connected = True
                 return True
             else:
-                self._logger.debug("WiFi connection status: not connected")
+                if self._connected:
+                    self._logger.debug("WiFi connection status: not connected")
+                self._connected = False
                 return False
         except subprocess.CalledProcessError:
             self._logger.debug("Failed to check WiFi connection status")

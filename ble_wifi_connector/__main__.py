@@ -34,7 +34,7 @@ async def main_event_loop():
 
     while True:
         try:
-            await asyncio.sleep(EVENT_LOOP_TIME_OUT)
+            await asyncio.sleep(EVENT_LOOP_TIME_OUT * 100)
 
             if state == BLEWiFiConnectorState.RESET:
                 state = BLEWiFiConnectorState.BLE_ADVERTISE
