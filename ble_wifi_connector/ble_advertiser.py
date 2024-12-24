@@ -326,22 +326,19 @@ def main(mode: str, ssid: str, pw: str, broker_info: str, device_name: str):
             server_name = f'{device_name}'
             device_address = None
 
-            devices = await BleakScanner.discover(timeout=20)
-            for device in devices:
-                if device.name == server_name:
-                    click.echo(f'Found BLE server! Name: {device.name}, Address: {device.address}')
-                    device_address = device.address
-                    break
+            found = False
+            while not found:
+                devices = await BleakScanner.discover(timeout=1)
+                for device in devices:
+                    if device.name == server_name:
+                        click.echo(f'Found BLE server! Name: {device.name}, Address: {device.address}')
+                        device_address = device.address
+                        found = True
+                        break
+                    else:
+                        click.echo(f'{device.name} | {device.address}')
                 else:
-                    click.echo(f'{device.name} | {device.address}')
-            else:
-                click.echo(f"Cannot find device with name: {server_name}")
-                return
-
-            ssid_characteristic_uuid = DeviceWifiService.SetWifiSSIDCharacteristic().uuid
-            pw_characteristic_uuid = DeviceWifiService.SetWifiPWCharacteristic().uuid
-            set_broker_info_characteristic_uuid = DeviceWifiService.SetBrokerInfoCharacteristic().uuid
-            connect_wifi_characteristic_uuid = DeviceWifiService.ConnectWifiCharacteristic().uuid
+                    click.echo(f"Cannot find device with name: {server_name}")
 
             ssid_value = ssid.encode()
             pw_value = pw.encode()
@@ -351,16 +348,20 @@ def main(mode: str, ssid: str, pw: str, broker_info: str, device_name: str):
                 if client.is_connected:
                     click.echo(f"Connected to {device_address}")
 
-                    await client.write_gatt_char(ssid_characteristic_uuid, ssid_value)
+                    ssid_characteristic = client.services.get_characteristic(DeviceWifiService.SetWifiSSIDCharacteristic().uuid)
+                    await client.write_gatt_char(ssid_characteristic.uuid, ssid_value)
                     click.echo("WiFi SSID set")
 
-                    await client.write_gatt_char(pw_characteristic_uuid, pw_value)
+                    pw_characteristic = client.services.get_characteristic(DeviceWifiService.SetWifiPWCharacteristic().uuid)
+                    await client.write_gatt_char(pw_characteristic, pw_value)
                     click.echo("WiFi password set")
 
-                    await client.write_gatt_char(set_broker_info_characteristic_uuid, broker_info_value)
+                    broker_info_characteristic = client.services.get_characteristic(DeviceWifiService.SetBrokerInfoCharacteristic().uuid)
+                    await client.write_gatt_char(broker_info_characteristic, broker_info_value)
                     click.echo("Broker info set")
 
-                    await client.write_gatt_char(connect_wifi_characteristic_uuid, bytearray([0x00]))
+                    connect_wifi_characteristic = client.services.get_characteristic(DeviceWifiService.ConnectWifiCharacteristic().uuid)
+                    await client.write_gatt_char(connect_wifi_characteristic, bytearray([0x00]))
                     click.echo("WiFi connection attempt")
 
         asyncio.run(set_smart_device(ssid, pw, broker_info, device_name))
