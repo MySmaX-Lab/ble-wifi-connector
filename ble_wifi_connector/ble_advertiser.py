@@ -282,12 +282,14 @@ def main(mode: str, ssid: str, pw: str, broker_info: str, device_name: str):
 
             device_address = None
 
-            devices = await BleakScanner.discover(timeout=10)
+            devices = await BleakScanner.discover(timeout=20)
             for device in devices:
                 if device.name == device_name:
                     print(f'Found BLE server! name: {device.name}, address: {device.address}')
                     device_address = device.address
                     break
+                else:
+                    print(f'{device.name} | {device.address}')
             else:
                 print(f"Cannot find {device_name}")
                 return
@@ -321,15 +323,17 @@ def main(mode: str, ssid: str, pw: str, broker_info: str, device_name: str):
         async def set_smart_device(ssid: str, pw: str, broker_info: str, device_name: str):
             from bleak import BleakClient, BleakScanner
 
-            server_name = f'JOI SD {device_name}'
+            server_name = f'{device_name}'
             device_address = None
 
-            devices = await BleakScanner.discover(timeout=10)
+            devices = await BleakScanner.discover(timeout=20)
             for device in devices:
                 if device.name == server_name:
                     click.echo(f'Found BLE server! Name: {device.name}, Address: {device.address}')
                     device_address = device.address
                     break
+                else:
+                    click.echo(f'{device.name} | {device.address}')
             else:
                 click.echo(f"Cannot find device with name: {server_name}")
                 return
