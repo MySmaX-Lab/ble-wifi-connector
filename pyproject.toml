@@ -25,6 +25,7 @@ bless = "*"
 dbus-next = "*"
 uvloop = "*"
 zeroconf = "*"
+click = "*"
 
 [tool.poetry.group.dev.dependencies]
 tox = "^4.6.3"
