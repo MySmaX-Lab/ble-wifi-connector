@@ -5,6 +5,7 @@ Requires=bluetooth.service
 
 [Service]
 Type=simple
+User=pi
 WorkingDirectory=/usr/local/joi/ble-wifi-connector
 ExecStart=sudo -E /usr/bin/python3 -m ble_wifi_connector
 Restart=always
