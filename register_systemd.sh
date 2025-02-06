@@ -5,14 +5,14 @@ if [ "$EUID" -ne 0 ]; then
   exit
 fi
 
-pip install .
+SERVICE_NAME="ble-wifi-connector"
 
-mkdir -p /usr/local/myssix
-cp -r . /usr/local/myssix/ble-wifi-connector
-cp ble-wifi-connector.service /etc/systemd/system/ble-wifi-connector.service
-chmod 644 /etc/systemd/system/ble-wifi-connector.service
+mkdir -p /usr/local/joi
+cp -r . /usr/local/joi/$SERVICE_NAME
+cp $SERVICE_NAME.service /etc/systemd/system/$SERVICE_NAME.service
 
 systemctl daemon-reload
-systemctl enable ble-wifi-connector.service
-systemctl start ble-wifi-connector.service
-# journalctl -u ble-wifi-connector.service
+systemctl enable $SERVICE_NAME.service
+systemctl restart $SERVICE_NAME.service
+
+echo "Service '${SERVICE_NAME}.service' installed and enabled successfully."

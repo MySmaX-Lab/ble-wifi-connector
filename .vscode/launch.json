@@ -12,6 +12,16 @@
       "console": "integratedTerminal"
     },
     {
+      "name": "run __main__",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/ble_wifi_connector",
+      "program": "${workspaceFolder}/ble_wifi_connector/__main__.py",
+      "console": "integratedTerminal",
+      "args": [],
+      "sudo": true
+    },
+    {
       "name": "set device",
       "type": "debugpy",
       "request": "launch",

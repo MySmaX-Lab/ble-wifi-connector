@@ -1,10 +1,14 @@
 [Unit]
 Description=MySmaX BLE WiFi Connector
-After=multi-user.target
+After=bluetooth.service bluetooth.target
+Requires=bluetooth.service
 
 [Service]
-Type=idle
-ExecStart=/usr/bin/python3 /usr/local/myssix/ble-wifi-connector/ble_wifi_connector/__main__.py
+Type=simple
+WorkingDirectory=/usr/local/joi/ble-wifi-connector
+ExecStart=sudo -E /usr/bin/python3 -m ble_wifi_connector
+Restart=always
+RestartSec=1
 
 [Install]
 WantedBy=multi-user.target

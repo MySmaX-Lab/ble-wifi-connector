@@ -5,8 +5,10 @@ if [ "$EUID" -ne 0 ]; then
   exit
 fi
 
-systemctl stop ble-wifi-connector.service
-systemctl disable ble-wifi-connector.service
-rm /etc/systemd/system/ble-wifi-connector.service
+SERVICE_NAME="ble-wifi-connector"
+
+systemctl stop $SERVICE_NAME.service
+systemctl disable $SERVICE_NAME.service
+rm /etc/systemd/system/$SERVICE_NAME.service
 systemctl daemon-reload
-rm -rf /usr/local/myssix/ble-wifi-connector
+rm -rf /usr/local/joi/$SERVICE_NAME

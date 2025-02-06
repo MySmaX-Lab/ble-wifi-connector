@@ -70,7 +70,7 @@ class HubWifiService(Service):
                 uuid='540F0004-0000-0000-0000-000000000000',
                 properties=GATTCharacteristicProperties.read,
                 permissions=GATTAttributePermissions.readable,
-                value=self.get_middleware_identifier('/usr/local/myssix/middleware/middleware.cfg').encode(),
+                value=self.get_middleware_identifier('/usr/local/joi/middleware/middleware.cfg').encode(),
             )
 
         def get_middleware_identifier(self, config_path) -> str:

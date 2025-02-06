@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "ble-wifi-connector"
 version = "0.1.0"
-description = "MySSIX BLE WiFi Connector"
+description = "JOI BLE WiFi Connector"
 authors = ["MySmaX <mysmaxlab@gmail.com>"]
 readme = "README.md"
 packages = [{include = "ble_wifi_connector"}]
