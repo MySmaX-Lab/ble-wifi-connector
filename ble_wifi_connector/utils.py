@@ -5,10 +5,33 @@ import os
 import getmac
 import logging
 import threading
+import subprocess
+import re
 
 
-def get_mac_address(interface: str = None) -> str:
-    mac_address = getmac.get_mac_address(interface)
+def get_wifi_mac_address():
+    mac_address = getmac.get_mac_address()
+    return mac_address
+
+
+def get_ble_mac_address() -> str:
+    try:
+        output = subprocess.check_output(['hciconfig']).decode('utf-8')
+        matches = re.findall(r'BD Address: ([0-9A-F:]+)', output)
+        if matches:
+            return matches[0]
+        else:
+            return None
+    except Exception as e:
+        print("에러 발생: ", e)
+        return None
+
+
+def get_mac_address(ble: bool = True) -> str:
+    if ble:
+        mac_address = get_ble_mac_address()
+    else:
+        mac_address = get_wifi_mac_address()
 
     if mac_address:
         mac_address = mac_address.replace(':', '').upper()
