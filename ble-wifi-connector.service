@@ -1,7 +1,7 @@
 [Unit]
 Description=MySmaX BLE WiFi Connector
-After=bluetooth.service bluetooth.target
-Requires=bluetooth.service
+After=bluetooth.service bluetooth.target joi_middleware.service
+Requires=bluetooth.service joi_middleware.service
 
 [Service]
 Type=simple
