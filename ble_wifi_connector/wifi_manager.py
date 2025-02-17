@@ -142,7 +142,7 @@ class WiFiManager:
 
     async def disconnect(self) -> bool:
         try:
-            connected_wifi_device = self.get_current_connected_wifi_device()
+            connected_wifi_device = await self.get_current_connected_wifi_device()
             disconnect_cmd = f"nmcli dev disconnect {connected_wifi_device}"
             process = await asyncio.create_subprocess_shell(disconnect_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             stdout, stderr = await process.communicate()
