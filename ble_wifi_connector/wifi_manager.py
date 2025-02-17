@@ -36,7 +36,7 @@ class WiFiManager:
     def password(self, password: str) -> None:
         self._password = password
 
-    def set_wifi(self, ssid: str, password: str) -> None:
+    def set_wifi_credential(self, ssid: str, password: str) -> None:
         self._ssid = ssid
         self._password = password
 
@@ -115,9 +115,46 @@ class WiFiManager:
             self._logger.debug(f"Error executing nmcli command: {e}")
             return ""
 
+    async def get_current_connected_wifi_device(self) -> str:
+        try:
+            process = await asyncio.create_subprocess_shell(
+                "nmcli -t -f DEVICE,TYPE,STATE dev status", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await process.communicate()
+            if process.returncode != 0:
+                self._logger.debug(f"Failed to get device status: {stderr.decode()}")
+                return ""
+
+            device = ""
+            for line in stdout.decode().splitlines():
+                fields = line.split(":")
+                if len(fields) >= 3 and fields[1].strip() == "wifi" and fields[2].strip() == "connected":
+                    device = fields[0].strip()
+                    break
+
+            return device
+        except OSError as e:
+            self._logger.debug(f"Error executing nmcli command: {e}")
+
     async def connect(self) -> bool:
         self._connected = await self.connect_to(self._ssid, self._password)
         return self._connected
+
+    async def disconnect(self) -> bool:
+        try:
+            connected_wifi_device = self.get_current_connected_wifi_device()
+            disconnect_cmd = f"nmcli dev disconnect {connected_wifi_device}"
+            process = await asyncio.create_subprocess_shell(disconnect_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            stdout, stderr = await process.communicate()
+            if process.returncode == 0:
+                self._logger.debug("WiFi disconnection attempt: success")
+                return True
+            else:
+                self._logger.debug(f"WiFi disconnection attempt: failed\n{stderr.decode()}")
+                return False
+        except OSError as e:
+            self._logger.debug(f"Error executing nmcli command: {e}")
+            return False
 
     def check_connection(self) -> bool:
         try:
