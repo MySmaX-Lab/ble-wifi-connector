@@ -212,7 +212,7 @@ class BLEAdvertiser:
         await self._add_service(HubWifiService())
 
         await self._server.start()
-        self._logger.debug('BLE Advertising started...')
+        self._logger.debug(f'BLE Advertising started with name {self._server_name}...')
 
     async def is_advertising(self) -> bool:
         if self._server is None:
