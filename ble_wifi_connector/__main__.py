@@ -55,14 +55,13 @@ async def main_event_loop():
                 ssid = wifi_credential[0]
                 pw = wifi_credential[1]
                 error = wifi_credential[2]
-                await ble_advertiser.stop()
+                # await ble_advertiser.stop()
 
                 if error != BLEErrorCode.NO_ERROR:
                     logger.debug(colored(f'Something getting wrong while BLE setup! error code: {error}', 'red'))
                     state = BLEWiFiConnectorState.RESET
                 else:
                     state = BLEWiFiConnectorState.NETWORK_SETUP
-
             elif state == BLEWiFiConnectorState.NETWORK_SETUP:
                 # WiFi Connect
                 wifi_manager.set_wifi_credential(ssid=ssid, password=pw)
@@ -84,6 +83,8 @@ async def main_event_loop():
                 if not wifi_manager.check_connection():
                     logger.debug(colored(f'WiFi connection lost...', 'yellow'))
                     state = BLEWiFiConnectorState.NETWORK_LOST
+                else:
+                    state = BLEWiFiConnectorState.BLE_ADVERTISE
             elif state == BLEWiFiConnectorState.NETWORK_LOST:
                 if not ssid == '' and not pw == '':
                     state = BLEWiFiConnectorState.NETWORK_SETUP
