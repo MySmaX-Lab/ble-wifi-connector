@@ -174,15 +174,15 @@ class BLEAdvertiser:
         return characteristic.value
 
     def _write_request(self, characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
-        self._logger.debug(f'Write {characteristic.value}')
+        self._logger.debug(f'Write event - UUID: {characteristic.uuid.upper()}, Value: {characteristic.value}')
 
         try:
             characteristic.value = value
             uuid = characteristic.uuid.upper()
             if uuid == HubWifiService.SetWifiSSIDCharacteristic().uuid:
-                self._logger.debug(f'WiFi SSID set: {self._server.get_characteristic(HubWifiService.SetWifiSSIDCharacteristic().uuid).value}')
+                self._logger.debug(f'WiFi SSID set: {self._server.get_characteristic(uuid).value}')
             elif uuid == HubWifiService.SetWifiPWCharacteristic().uuid:
-                self._logger.debug(f'WiFi PW set: {self._server.get_characteristic(HubWifiService.SetWifiPWCharacteristic().uuid).value}')
+                self._logger.debug(f'WiFi PW set: {self._server.get_characteristic(uuid).value}')
             elif uuid == HubWifiService.ConnectWifiCharacteristic().uuid:
                 ssid = self._server.get_characteristic(HubWifiService.SetWifiSSIDCharacteristic().uuid).value
                 pw = self._server.get_characteristic(HubWifiService.SetWifiPWCharacteristic().uuid).value
@@ -193,7 +193,7 @@ class BLEAdvertiser:
                     )
                     return
                 else:
-                    self._logger.debug(colored('wifi credentials is set!', 'green'))
+                    self._logger.debug(colored(f'wifi credentials is set! ssid: {ssid}, pw: {pw}', 'green'))
                     self._trigger.set()
         except Exception as e:
             self._logger.debug(colored(f'Error occurred while writing characteristic: {e}', 'red'))
@@ -229,6 +229,7 @@ class BLEAdvertiser:
             ssid = self._server.get_characteristic(HubWifiService.SetWifiSSIDCharacteristic().uuid).value.decode()
             pw = self._server.get_characteristic(HubWifiService.SetWifiPWCharacteristic().uuid).value.decode()
             error_code = BLEErrorCode(int.from_bytes(self._server.get_characteristic(HubWifiService.ErrorCodeCharacteristic().uuid).value, 'little'))
+            self._logger.debug(colored(f'wifi credentials is set finally! ssid: {ssid}, pw: {pw}, error: {error_code}', 'green'))
             return (ssid, pw, error_code)
 
         try:
