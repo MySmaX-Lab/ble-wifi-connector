@@ -174,6 +174,8 @@ class BLEAdvertiser:
         return characteristic.value
 
     def _write_request(self, characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
+        self._logger.debug(f'Write {characteristic.value}')
+
         try:
             characteristic.value = value
             uuid = characteristic.uuid.upper()
