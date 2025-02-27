@@ -65,7 +65,7 @@ async def main_event_loop():
             elif state == BLEWiFiConnectorState.NETWORK_SETUP:
                 # WiFi Connect
                 wifi_manager.set_wifi_credential(ssid=ssid, password=pw)
-                await wifi_manager.disconnect()
+                # await wifi_manager.disconnect()
                 await wifi_manager.connect()
                 if wifi_manager.check_connection():
                     logger.debug(colored(f'WiFi connection success. SSID: {wifi_manager.get_connected_wifi_ssid()}', 'green'))
