@@ -177,8 +177,9 @@ class BLEAdvertiser:
         self._logger.debug(f'Write event - UUID: {characteristic.uuid.upper()}, Value: {characteristic.value}')
 
         try:
-            characteristic.value = value
             uuid = characteristic.uuid.upper()
+            char = self._server.get_characteristic(uuid)
+            char.value = value or self._server.get_characteristic(uuid).value
             if uuid == HubWifiService.SetWifiSSIDCharacteristic().uuid:
                 self._logger.debug(f'WiFi SSID set: {self._server.get_characteristic(uuid).value}')
             elif uuid == HubWifiService.SetWifiPWCharacteristic().uuid:
