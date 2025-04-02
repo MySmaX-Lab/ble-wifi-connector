@@ -29,3 +29,6 @@ click = "*"
 
 [tool.poetry.group.dev.dependencies]
 tox = "^4.6.3"
+
+[tool.poetry.scripts]
+ble-wifi-connector = "ble_wifi_connector.ble_advertiser:main"
