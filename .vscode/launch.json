@@ -1,0 +1,63 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python 디버거: 현재 파일",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "run __main__",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/ble_wifi_connector",
+      "program": "${workspaceFolder}/ble_wifi_connector/__main__.py",
+      "console": "integratedTerminal",
+      "args": [],
+      "sudo": true
+    },
+    {
+      "name": "set device",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/ble_wifi_connector",
+      "program": "${workspaceFolder}/ble_wifi_connector/ble_advertiser.py",
+      "console": "integratedTerminal",
+      "args": [
+        "-m",
+        "set_smart_device",
+        "--ssid",
+        "MySmaX-office",
+        "--pw",
+        "/PeaCE/#1",
+        "-n",
+        "JOI SD 7C3568",
+        "-b",
+        "iotdev2.snu.ac.kr:8883",
+      ]
+    },
+    {
+      "name": "set hub",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/ble_wifi_connector",
+      "program": "${workspaceFolder}/ble_wifi_connector/ble_advertiser.py",
+      "console": "integratedTerminal",
+      "args": [
+        "-m",
+        "set_hub",
+        "--ssid",
+        "MySmaX-office",
+        "--pw",
+        "/PeaCE/#1",
+        "-n",
+        "JOI Hub 7C3568",
+      ]
+    }
+  ]
+}
