@@ -52,11 +52,67 @@
         "-m",
         "set_hub",
         "--ssid",
+        "MySmaX-office5G",
+        "--pw",
+        "/PeaCE/#1",
+        "-n",
+        "JOI Hub D83ADDE4BBF7",
+      ]
+    },
+    {
+      "name": "ble-wifi-connector set_hub",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "ble_wifi_connector.ble_advertiser",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "-m",
+        "set_hub",
+        "--ssid",
+        "MySmaX-office5G",
+        "--pw",
+        "/PeaCE/#1",
+        "-n",
+        "JOI Hub D83ADDE4BBF7"
+      ]
+    },
+    {
+      "name": "ble-wifi-connector set_smart_device",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "ble_wifi_connector.ble_advertiser",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "-m",
+        "set_smart_device",
+        "--ssid",
         "MySmaX-office",
         "--pw",
         "/PeaCE/#1",
         "-n",
-        "JOI Hub 7C3568",
+        "JOI SD 7C3568",
+        "-b",
+        "iotdev2.snu.ac.kr:8883"
+      ]
+    },
+    {
+      "name": "ble-wifi-connector run_hub",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "ble_wifi_connector.ble_advertiser",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "-m",
+        "run_hub",
+        "--ssid",
+        "MySmaX-office5G",
+        "--pw",
+        "/PeaCE/#1",
+        "-n",
+        "JOI Hub D83ADDE4BBF7"
       ]
     }
   ]

@@ -1,13 +1,11 @@
-from ble_wifi_connector.utils import *
+from ble_wifi_connector.common.utils import *
 
 import asyncio
 from enum import Enum, auto
 
 from ble_wifi_connector.ble_advertiser import BLEAdvertiser, BLEErrorCode
 from ble_wifi_connector.wifi_manager import WiFiManager
-from termcolor import cprint, colored
-import json
-import subprocess
+from termcolor import colored
 
 
 EVENT_LOOP_TIME_OUT = 0.01
