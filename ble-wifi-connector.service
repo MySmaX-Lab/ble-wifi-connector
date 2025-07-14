@@ -1,15 +1,19 @@
 [Unit]
 Description=MySmaX BLE WiFi Connector
-After=bluetooth.service bluetooth.target joi_middleware.service
-Requires=bluetooth.service joi_middleware.service
+After=bluetooth.service bluetooth.target
+Wants=bluetooth.service
 
 [Service]
 Type=simple
-User=pi
+User=root
+Group=root
 WorkingDirectory=/usr/local/joi/ble-wifi-connector
-ExecStart=sudo -E /usr/bin/python3 -m ble_wifi_connector
+Environment=PYTHONPATH=/usr/local/joi/ble-wifi-connector
+ExecStart=/usr/bin/python3 /usr/local/joi/ble-wifi-connector/ble_wifi_connector/__main__.py
 Restart=always
-RestartSec=1
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
