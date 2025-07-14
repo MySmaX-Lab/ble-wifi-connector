@@ -5,6 +5,8 @@ current_uid=$(id -u "$current_user")
 
 SERVICE_NAME="ble-wifi-connector"
 
+pip install . --break-system-packages
+
 sudo mkdir -p /usr/local/joi
 sudo cp -r . /usr/local/joi/$SERVICE_NAME
 sudo cp $SERVICE_NAME.service /etc/systemd/system/$SERVICE_NAME.service

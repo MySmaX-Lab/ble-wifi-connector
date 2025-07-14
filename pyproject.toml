@@ -1,34 +1,31 @@
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
 
-[tool.poetry]
+[project]
 name = "ble-wifi-connector"
 version = "0.1.0"
 description = "JOI BLE WiFi Connector"
-authors = ["MySmaX <mysmaxlab@gmail.com>"]
+authors = [{ name = "MySmaX", email = "mysmaxlab@gmail.com" }]
 readme = "README.md"
-packages = [{include = "ble_wifi_connector"}]
+requires-python = ">=3.7"
+dependencies = [
+  "termcolor",
+  "getmac",
+  "typing-extensions>=4.0",
+  "dataclasses; python_version<'3.7'",
+  "pytest",
+  "pytest-timeout",
+  "pytest-asyncio",
+  "importlib-metadata",
+  "bless",
+  "dbus-next",
+  "uvloop",
+  "zeroconf",
+  "click",
+]
 
-[tool.poetry.dependencies]
-python = "^3.7"
-
-termcolor = "*"
-getmac = "*"
-typing-extensions = ">=4.0"
-dataclasses = "*"
-pytest = "*"
-pytest-timeout = "*"
-pytest-asyncio = "*"
-importlib-metadata = "*"
-bless = "*"
-dbus-next = "*"
-uvloop = "*"
-zeroconf = "*"
-click = "*"
-
-[tool.poetry.group.dev.dependencies]
-tox = "^4.6.3"
-
-[tool.poetry.scripts]
+[project.scripts]
 ble-wifi-connector = "ble_wifi_connector.ble_advertiser:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ble_wifi_connector*"]
+# exclude = ["log*"]
