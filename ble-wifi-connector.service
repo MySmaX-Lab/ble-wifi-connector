@@ -11,7 +11,7 @@ WorkingDirectory=/usr/local/joi/ble-wifi-connector
 Environment=PYTHONPATH=/usr/local/joi/ble-wifi-connector
 ExecStartPre=/usr/sbin/rfkill unblock bluetooth
 ExecStartPre=/bin/sleep 1
-ExecStart=/usr/bin/python3 /usr/local/joi/ble-wifi-connector/ble_wifi_connector/__main__.py
+ExecStart=/usr/local/joi/ble-wifi-connector/.venv/bin/python /usr/local/joi/ble-wifi-connector/ble_wifi_connector/__main__.py
 Restart=always
 RestartSec=5
 StandardOutput=journal
