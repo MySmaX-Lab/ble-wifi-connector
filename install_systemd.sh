@@ -7,9 +7,9 @@ SERVICE_NAME="ble-wifi-connector"
 INSTALL_DIR="/usr/local/joi/$SERVICE_NAME"
 VENV_DIR="$INSTALL_DIR/.venv"
 
-# Get the actual user's home directory
+# Get the actual user's home directory safely
 if [ -n "$SUDO_USER" ]; then
-    USER_HOME=$(eval echo ~$SUDO_USER)
+    USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
 else
     USER_HOME="$HOME"
 fi
@@ -54,11 +54,11 @@ sudo chown -R root:root /usr/local/joi/$SERVICE_NAME
 sudo chmod +x /usr/local/joi/$SERVICE_NAME/ble_wifi_connector/__main__.py
 
 echo "Creating virtual environment with uv..."
-cd $INSTALL_DIR
-sudo $UV_PATH venv $VENV_DIR
+cd "$INSTALL_DIR"
+sudo "$UV_PATH" venv "$VENV_DIR"
 
 echo "Installing Python dependencies in virtual environment..."
-sudo $UV_PATH pip install --python $VENV_DIR/bin/python .
+sudo "$UV_PATH" pip install --python "$VENV_DIR/bin/python" .
 
 sudo cp $SERVICE_NAME.service /etc/systemd/system/$SERVICE_NAME.service
 
