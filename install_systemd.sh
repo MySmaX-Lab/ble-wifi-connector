@@ -11,7 +11,15 @@ VENV_DIR="$INSTALL_DIR/.venv"
 if ! command -v uv &> /dev/null; then
     echo "Installing uv..."
     curl -LsSf https://astral.sh/uv/install.sh | sh
-    export PATH="$HOME/.cargo/bin:$PATH"
+    # Add uv to PATH for this script
+    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+fi
+
+# Ensure uv is available for sudo commands
+UV_PATH=$(command -v uv)
+if [ -z "$UV_PATH" ]; then
+    echo "Error: uv not found after installation. Please install uv manually."
+    exit 1
 fi
 
 echo "Setting up service files..."
@@ -24,10 +32,10 @@ sudo chmod +x /usr/local/joi/$SERVICE_NAME/ble_wifi_connector/__main__.py
 
 echo "Creating virtual environment with uv..."
 cd $INSTALL_DIR
-sudo uv venv $VENV_DIR
+sudo $UV_PATH venv $VENV_DIR
 
 echo "Installing Python dependencies in virtual environment..."
-sudo uv pip install --python $VENV_DIR/bin/python .
+sudo $UV_PATH pip install --python $VENV_DIR/bin/python .
 
 sudo cp $SERVICE_NAME.service /etc/systemd/system/$SERVICE_NAME.service
 

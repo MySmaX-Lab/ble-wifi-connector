@@ -2,9 +2,25 @@
 
 ## Installation
 
+### Manual installation (for development)
+
 ```bash
 pip install .
 ```
+
+### Service installation (for production)
+
+The service installation uses `uv` to create an isolated virtual environment.
+
+```bash
+./install_systemd.sh
+```
+
+This will:
+- Install `uv` if not already installed
+- Create a virtual environment at `/usr/local/joi/ble-wifi-connector/.venv`
+- Install all dependencies in the virtual environment
+- Set up and start the systemd service
 
 ## Usage
 
