@@ -17,7 +17,15 @@ fi
 # Check if uv is installed, if not install it
 if ! command -v uv &> /dev/null; then
     echo "Installing uv..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    tmp_script="$(mktemp)"
+    if curl -LsSf https://astral.sh/uv/install.sh -o "$tmp_script"; then
+        sh "$tmp_script"
+        rm -f "$tmp_script"
+    else
+        echo "Failed to download uv install script."
+        rm -f "$tmp_script"
+        exit 1
+    fi
     # Add uv to PATH for this script - check both possible installation locations
     export PATH="$USER_HOME/.local/bin:$USER_HOME/.cargo/bin:$PATH"
     # Try to source the shell profile to get uv in PATH
