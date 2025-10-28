@@ -62,7 +62,7 @@ sudo chown -R root:root /usr/local/joi/$SERVICE_NAME
 sudo chmod +x /usr/local/joi/$SERVICE_NAME/ble_wifi_connector/__main__.py
 
 echo "Creating virtual environment with uv..."
-cd "$INSTALL_DIR"
+cd "$INSTALL_DIR" || exit 1
 sudo "$UV_PATH" venv "$VENV_DIR"
 
 echo "Installing Python dependencies in virtual environment..."
